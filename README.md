@@ -1,5 +1,5 @@
 # Delhi Sustainability & Civic Action Platform  
-### Hackathon Project – Avinya HNSUT Hackathon 2026  
+### Hackathon Project – Avinya NSUT Hackathon 2026  
 
 Developed by **Aryan Panwar**
 
@@ -12,7 +12,7 @@ This project is a civic-tech web platform designed to allow citizens of Delhi to
 The system focuses on locality-level governance (not raw GPS storage) and introduces transparency, participation and accountability using AI-assisted classification, regional analytics and blockchain verification.
 
 This project was built as a hackathon submission for  
-**Avinya HNSUT Hackathon 2026 (HNSUT)**.
+**Avinya NSUT Hackathon 2026 (NSUT)**.
 
 ---
 
