@@ -1,0 +1,38 @@
+# --- Python / Environment ---
+__pycache__/
+*.py[cod]
+*$py.class
+venv/
+env/
+.env
+.venv
+pip-log.txt
+pip-delete-this-directory.txt
+
+# --- AI / Machine Learning ---
+# Exclude heavy model weights if they are large
+*.h5
+*.pth
+*.onnx
+*.weights
+# If you use datasets locally
+/data/raw/
+/data/processed/
+
+# --- Database ---
+# Exclude your local SQLite db or migrations junk
+*.db
+*.sqlite3
+instance/
+.webassets-cache
+
+# --- OS / IDE ---
+.DS_Store
+.vscode/
+.idea/
+*.swp
+*.bak
+
+# --- Logs ---
+*.log
+logs/

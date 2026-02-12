@@ -1,0 +1,427 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <title>Command Console | AVIN Delhi</title>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --canvas: #ffffff;
+            --panel: #fcfcfc;
+            --stroke: #e2e8f0;
+            --text-main: #0f172a;
+            --text-muted: #64748b;
+            --accent: #10b981;
+            --accent-soft: #ecfdf5;
+            --radius-ui: 6px;
+            --font-mono: 'JetBrains Mono', monospace;
+        }
+
+        body {
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            background-color: var(--canvas);
+            color: var(--text-main);
+            margin: 0;
+            -webkit-font-smoothing: antialiased;
+        }
+
+        /* Tactical Navigation container adjustment */
+        nav {
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 48px 40px;
+        }
+
+        /* Metric Tiles */
+        .dashboard-header {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 1px;
+            background: var(--stroke);
+            border: 1.5px solid var(--stroke);
+            border-radius: var(--radius-ui);
+            margin-bottom: 48px;
+            overflow: hidden;
+        }
+
+        .tile { background: white; padding: 24px; }
+        .tile-label { font-size: 11px; font-weight: 800; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.05em; }
+        .tile-val { font-size: 32px; font-weight: 800; display: block; margin-top: 4px; font-family: var(--font-mono); }
+
+        /* Command Inputs */
+        .input-block { margin-bottom: 40px; }
+        .label-row { font-size: 12px; font-weight: 800; text-transform: uppercase; margin-bottom: 12px; color: var(--text-muted); display: flex; align-items: center; gap: 8px; }
+
+        textarea#text {
+            width: 100%;
+            border: 1.5px solid var(--stroke);
+            border-radius: var(--radius-ui);
+            padding: 20px;
+            font-family: inherit;
+            font-size: 15px;
+            background: var(--panel);
+            resize: none;
+            transition: 0.2s;
+            box-sizing: border-box;
+        }
+
+        textarea#text:focus { outline: none; border-color: var(--text-main); background: white; box-shadow: 0 0 0 4px var(--accent-soft); }
+
+        .btn-prime {
+            background: var(--text-main);
+            color: white;
+            border: none;
+            padding: 14px 28px;
+            border-radius: var(--radius-ui);
+            font-weight: 800;
+            font-size: 13px;
+            cursor: pointer;
+            transition: 0.2s;
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .btn-prime:hover { background: var(--accent); transform: translateY(-1px); }
+
+        /* Grid Data Surfaces */
+        .data-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 32px;
+            margin-bottom: 40px;
+        }
+
+        .surface { border: 1.5px solid var(--stroke); border-radius: var(--radius-ui); overflow: hidden; }
+        .surface-head { background: var(--panel); padding: 12px 16px; font-size: 11px; font-weight: 800; text-transform: uppercase; border-bottom: 1.5px solid var(--stroke); }
+
+        table { width: 100%; border-collapse: collapse; }
+        td { padding: 14px 16px; font-size: 13px; border-bottom: 1px solid var(--stroke); }
+        tr:last-child td { border-bottom: none; }
+
+        .hotspot-row { cursor: pointer; transition: 0.2s; }
+        .hotspot-row:hover { background: var(--accent-soft); }
+        .hotspot-row:hover td { color: var(--accent); }
+
+        .pill { background: var(--text-main); color: white; padding: 2px 8px; border-radius: 4px; font-size: 10px; font-weight: 800; font-family: var(--font-mono); }
+
+        #regionMap { height: 440px; background: var(--panel); }
+
+        #popup { background: rgba(15, 23, 42, 0.8); backdrop-filter: blur(4px); }
+        .modal { background: white; width: 520px; border-radius: 8px; padding: 32px; box-shadow: 0 25px 50px -12px rgba(0,0,0,0.25); }
+        .modal input, .modal select, .modal textarea {
+            width: 100%; padding: 12px; margin-top: 8px; border: 1.5px solid var(--stroke); border-radius: var(--radius-ui); font-family: inherit;
+        }
+
+        .btn-sec { background: var(--stroke); border: none; padding: 12px 20px; border-radius: var(--radius-ui); font-weight: 700; cursor: pointer; }
+
+        .success-box { background: var(--accent-soft); color: var(--accent); padding: 16px; border-radius: var(--radius-ui); font-weight: 700; margin-top: 16px; border: 1px solid var(--accent); }
+    </style>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+</head>
+
+<body>
+    {% include "_navbar.html" %}
+
+    <div class="container">
+        <div class="dashboard-header">
+            <div class="tile">
+                <span class="tile-label">Verified Credits</span>
+                <span class="tile-val" id="myCredits">--</span>
+            </div>
+            <div class="tile">
+                <span class="tile-label">Regional Standing</span>
+                <span class="tile-val" id="myRank">--</span>
+            </div>
+            <div class="tile">
+                <span class="tile-label">System Access</span>
+                <span class="tile-val" style="color:var(--accent)">ACTIVE</span>
+            </div>
+        </div>
+
+        <div class="input-block">
+            <div class="label-row">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="M12 5v14M5 12h14"/></svg>
+                Initialize Incident Log
+            </div>
+            <textarea id="text" rows="3" placeholder="Input issue parameters (e.g. 'Air quality drop near Okhla')..."></textarea>
+            <div style="margin-top: 16px; display: flex; justify-content: flex-end;">
+                <button class="btn-prime" onclick="openPrefill()">
+                    Process Entry
+                </button>
+            </div>
+            <div id="result"></div>
+        </div>
+
+        <div class="data-grid">
+            <div class="surface">
+                <div class="surface-head">Local Density Hotspots</div>
+                <table><tbody id="nearbyBox"><tr><td>Scanning regional sectors...</td></tr></tbody></table>
+            </div>
+            <div class="surface">
+                <div class="surface-head">Civic Leaderboard (Top Verified)</div>
+                <table><tbody id="leaderboardBox"><tr><td>Fetching registry...</td></tr></tbody></table>
+            </div>
+        </div>
+
+        <div class="surface" style="margin-bottom: 40px;">
+            <div class="surface-head">Sector Map Visualization (LV-4)</div>
+            <div id="regionMap"></div>
+        </div>
+
+        <div class="surface">
+            <div class="surface-head">Active User Log Entries</div>
+            <table>
+                <thead>
+                    <tr style="background:var(--panel); border-bottom:1.5px solid var(--stroke)">
+                        <td style="font-weight:800; font-size:11px">REF_ID</td>
+                        <td style="font-weight:800; font-size:11px">LOG_SUMMARY</td>
+                        <td style="font-weight:800; font-size:11px">ACTION</td>
+                    </tr>
+                </thead>
+                <tbody id="personalIssues">
+                    {% if issues|length == 0 %}
+                    <tr><td colspan="3" style="text-align:center; color:var(--text-muted)">No recorded telemetry.</td></tr>
+                    {% else %}
+                    {% for issue in issues %}
+                    <tr>
+                        <td style="font-family:var(--font-mono); font-weight:700">#{{ issue.id }}</td>
+                        <td style="color:var(--text-muted)">{{ (issue.original_text[:40] + '...') if issue.original_text|length > 40 else issue.original_text }}</td>
+                        <td><a href="/issue/{{ issue.id }}/view" style="color:var(--accent); font-weight:800; text-decoration:none">OPEN_LOG</a></td>
+                    </tr>
+                    {% endfor %}
+                    {% endif %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <div id="popup" style="display:none; position:fixed; inset:0; z-index:2000; align-items:center; justify-content:center;">
+        <div class="modal">
+            <h3 style="margin:0 0 8px 0; font-size:18px;">Confirm Telemetry</h3>
+            <p style="font-size:13px; color:var(--text-muted); margin:0;">Validate AI categorization for blockchain entry.</p>
+            
+            <div style="margin-top:20px;">
+                <label style="font-size:11px; font-weight:800; color:var(--text-muted);">SECTOR_LOCATION</label>
+                <input id="p_location">
+                
+                <div style="display:grid; grid-template-columns:1fr 1fr; gap:16px; margin-top:16px;">
+                    <div>
+                        <label style="font-size:11px; font-weight:800; color:var(--text-muted);">CATEGORY</label>
+                        <select id="p_category"></select>
+                    </div>
+                    <div>
+                        <label style="font-size:11px; font-weight:800; color:var(--text-muted);">SUBSET</label>
+                        <select id="p_subcategory"></select>
+                    </div>
+                </div>
+
+                <label style="font-size:11px; font-weight:800; color:var(--text-muted); display:block; margin-top:16px;">FINAL_DESCRIPTION</label>
+                <textarea id="p_description" rows="3" style="width:100%; padding:12px; border:1.5px solid var(--stroke); border-radius:var(--radius-ui); box-sizing:border-box;"></textarea>
+            </div>
+
+            <div style="margin-top:32px; display:flex; gap:12px; justify-content:flex-end;">
+                <button class="btn-sec" onclick="closePopup()">DISCARD</button>
+                <button class="btn-prime" onclick="submitFinal()">COMMIT_TO_LEDGER</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <script>
+        let browserLocation = null;
+        let ISSUE_TAXONOMY = {};
+        let detectedLocality = "";
+        let regionMap;
+        const geocodeCache = {};
+        let regionLayers = [];
+
+        function categoryColor(cat) {
+            const m = { "waste": "#10b981", "water": "#0ea5e9", "air": "#6366f1", "roads": "#f59e0b", "transport": "#ef4444" };
+            return m[(cat || "").toLowerCase()] || "#64748b";
+        }
+
+        async function geocodeRegion(name) {
+            if (geocodeCache[name]) return geocodeCache[name];
+            const url = "https://nominatim.openstreetmap.org/search?format=json&q=" + encodeURIComponent(name + ", Delhi, India");
+            try {
+                const res = await fetch(url, { headers: { "User-Agent": "delhi-sustainability-app" } });
+                const data = await res.json();
+                if (!data.length) return null;
+                const p = { lat: parseFloat(data[0].lat), lng: parseFloat(data[0].lon) };
+                geocodeCache[name] = p; return p;
+            } catch(e) { return null; }
+        }
+
+        async function initRegionMap() {
+            let center = [28.6139, 77.2090];
+            let zoom = 11;
+            if (detectedLocality) {
+                const p = await geocodeRegion(detectedLocality);
+                if (p) { center = [p.lat, p.lng]; zoom = 13; }
+            }
+            if (regionMap) { regionMap.setView(center, zoom); return; }
+            regionMap = L.map("regionMap", { zoomControl: false }).setView(center, zoom);
+            L.tileLayer("https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png").addTo(regionMap);
+            await loadRegionMarkers();
+        }
+
+        async function loadRegionMarkers() {
+            const res = await fetch("/api/map/regions");
+            const regions = await res.json();
+            regionLayers.forEach(l => regionMap.removeLayer(l));
+            for (const r of regions) {
+                const p = await geocodeRegion(r.location);
+                if (!p) continue;
+                const base = L.circleMarker([p.lat, p.lng], {
+                    radius: Math.min(25, 8 + r.count * 1.5),
+                    color: categoryColor((r.dominant_category || "").toLowerCase()),
+                    fillOpacity: 0.15, weight: 2
+                }).addTo(regionMap);
+                regionLayers.push(base);
+            }
+        }
+
+        async function loadProfileStats() {
+            const me = await fetch("/api/me").then(r => r.json());
+            const rank = await fetch("/api/me/rank").then(r => r.json());
+            document.getElementById("myCredits").innerText = me.credits;
+            document.getElementById("myRank").innerText = rank.rank_in_area ? "#" + rank.rank_in_area : "#" + rank.rank_in_delhi;
+        }
+
+        async function loadLeaderboard() {
+            const res = await fetch("/api/leaderboard");
+            const data = await res.json();
+            const box = document.getElementById("leaderboardBox");
+            box.innerHTML = "";
+            data.slice(0, 5).forEach((u, i) => {
+                const tr = document.createElement("tr");
+                tr.innerHTML = `<td style="font-weight:700">#${i + 1} ${u.name}</td><td style="text-align:right"><span class="pill">${u.credits} CP</span></td>`;
+                box.appendChild(tr);
+            });
+        }
+
+        async function loadNearbyIssues() {
+            if (!navigator.geolocation) return;
+            navigator.geolocation.getCurrentPosition(async pos => {
+                browserLocation = { lat: pos.coords.latitude, lng: pos.coords.longitude };
+                const res = await fetch("/api/issues/nearby", {
+                    method: "POST", headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify(browserLocation)
+                });
+                const payload = await res.json();
+                detectedLocality = payload.location || "";
+                const box = document.getElementById("nearbyBox");
+                box.innerHTML = "";
+
+                const freq = payload.issues.reduce((acc, i) => { acc[i.category] = (acc[i.category] || 0) + 1; return acc; }, {});
+                
+                Object.entries(freq).sort((a,b) => b[1]-a[1]).slice(0, 3).forEach(([k, v]) => {
+                    const tr = document.createElement("tr");
+                    tr.className = "hotspot-row";
+                    tr.innerHTML = `<td style="font-weight:700">${k}</td><td style="text-align:right"><span class="pill">${v} REPORTS</span></td>`;
+                    tr.onclick = () => openFromNearby(k);
+                    box.appendChild(tr);
+                });
+                initRegionMap();
+            });
+        }
+
+        async function loadCategories() {
+            const res = await fetch("/api/issue/categories");
+            ISSUE_TAXONOMY = await res.json();
+            const c = document.getElementById("p_category");
+            Object.keys(ISSUE_TAXONOMY).forEach(cat => {
+                const o = document.createElement("option"); o.value = cat; o.textContent = cat; c.appendChild(o);
+            });
+            c.onchange = () => {
+                const sub = document.getElementById("p_subcategory"); sub.innerHTML = "";
+                Object.keys(ISSUE_TAXONOMY[c.value]).forEach(s => {
+                    const o = document.createElement("option"); o.value = s; o.textContent = s; sub.appendChild(o);
+                });
+            };
+            c.onchange();
+        }
+
+        async function openFromNearby(category) {
+            if (!Object.keys(ISSUE_TAXONOMY).length) await loadCategories();
+            document.getElementById("p_location").value = detectedLocality;
+            document.getElementById("p_category").value = category;
+            document.getElementById("p_subcategory").innerHTML = ""; 
+            Object.keys(ISSUE_TAXONOMY[category]).forEach(s => {
+                const o = document.createElement("option"); o.value = s; o.textContent = s; 
+                document.getElementById("p_subcategory").appendChild(o);
+            });
+            document.getElementById("p_description").value = `Reporting observation for ${category} in this sector.`;
+            document.getElementById("popup").style.display = "flex";
+        }
+
+        async function openPrefill() {
+
+    const textVal = document.getElementById("text").value.trim();
+    if (!textVal) return;
+
+    if (!Object.keys(ISSUE_TAXONOMY).length)
+        await loadCategories();
+
+    const res = await fetch("/api/issue/prefill", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+            text: textVal,
+            browser_location: browserLocation
+        })
+    });
+
+    const data = await res.json();
+
+    p_location.value = data.location || "";
+    p_description.value = data.description || textVal;
+
+    /* ---------- APPLY DETECTION ---------- */
+
+    if (data.category && ISSUE_TAXONOMY[data.category]) {
+
+        p_category.value = data.category;
+
+        p_subcategory.innerHTML = "";
+
+        Object.keys(ISSUE_TAXONOMY[data.category]).forEach(s => {
+            const o = document.createElement("option");
+            o.value = s;
+            o.textContent = s;
+            p_subcategory.appendChild(o);
+        });
+
+        if (data.subcategory) {
+            p_subcategory.value = data.subcategory;
+        }
+    }
+
+    document.getElementById("popup").style.display = "flex";
+}
+
+
+        function closePopup() { document.getElementById("popup").style.display = "none"; }
+        async function submitFinal() {
+            const payload = { location: p_location.value, category: p_category.value, subcategory: p_subcategory.value, description: p_description.value };
+            const res = await fetch("/api/issue/report", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(payload) });
+            const data = await res.json();
+            closePopup();
+            document.getElementById("result").innerHTML = `<div class="success-box">COMMITTED: #ID_${data.issue_id} verified.</div>`;
+            document.getElementById("text").value = "";
+        }
+
+        loadCategories(); loadProfileStats(); loadLeaderboard(); loadNearbyIssues();
+    </script>
+</body>
+
+</html>

@@ -1,0 +1,258 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <title>Action Ledger | AVIN Delhi</title>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --canvas: #ffffff;
+            --panel: #fcfcfc;
+            --stroke: #e2e8f0;
+            --text-main: #0f172a;
+            --text-muted: #64748b;
+            --accent: #10b981;
+            --accent-soft: #ecfdf5;
+            --radius-ui: 6px;
+            --font-mono: 'JetBrains Mono', monospace;
+        }
+
+        body {
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            background-color: var(--canvas);
+            color: var(--text-main);
+            margin: 0;
+            -webkit-font-smoothing: antialiased;
+        }
+
+        .container {
+            max-width: 1000px;
+            margin: 0 auto;
+            padding: 60px 40px;
+        }
+
+        /* Tactical Header */
+        .nav-bar {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-end;
+            margin-bottom: 40px;
+            border-bottom: 1.5px solid var(--stroke);
+            padding-bottom: 24px;
+        }
+
+        h2 { font-size: 28px; font-weight: 800; margin: 0; letter-spacing: -1px; }
+
+        .back-btn {
+            text-decoration: none;
+            color: var(--text-muted);
+            font-size: 13px;
+            font-weight: 700;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            transition: 0.2s;
+        }
+
+        .back-btn:hover { color: var(--text-main); transform: translateX(-4px); }
+
+        /* Command-Style Bento Grid */
+        .bento-grid {
+            display: grid;
+            grid-template-columns: 1.2fr 1fr;
+            gap: 24px;
+            margin-bottom: 32px;
+        }
+
+        .surface {
+            background: white;
+            border: 1.5px solid var(--stroke);
+            border-radius: var(--radius-ui);
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .surface-head {
+            background: var(--panel);
+            padding: 12px 20px;
+            font-size: 11px;
+            font-weight: 800;
+            text-transform: uppercase;
+            border-bottom: 1.5px solid var(--stroke);
+            color: var(--text-muted);
+            letter-spacing: 0.05em;
+        }
+
+        /* Impact Tile */
+        .stat-card { background: var(--text-main); color: white; border: none; }
+        .stat-card .surface-head { background: rgba(255,255,255,0.05); color: #94a3b8; border-color: rgba(255,255,255,0.1); }
+        .stat-body { padding: 32px; }
+        .stat-value { font-family: var(--font-mono); font-size: 48px; font-weight: 800; color: var(--accent); margin-bottom: 4px; display: block; }
+        .stat-label { font-size: 11px; font-weight: 700; text-transform: uppercase; opacity: 0.6; }
+
+        /* Progress Surface */
+        .progress-body { padding: 32px; flex-grow: 1; display: flex; flex-direction: column; justify-content: center; }
+        .progress-rail { height: 6px; width: 100%; background: var(--stroke); border-radius: 2px; margin-bottom: 16px; overflow: hidden; }
+        .progress-fill { height: 100%; background: var(--accent); transition: 1.5s cubic-bezier(0.4, 0, 0.2, 1); }
+        #levelText { font-family: var(--font-mono); font-size: 12px; font-weight: 700; text-transform: uppercase; color: var(--text-muted); }
+
+        /* System Ledger Table */
+        .table-wrapper { grid-column: span 2; }
+        
+        table { width: 100%; border-collapse: collapse; }
+        thead th {
+            text-align: left;
+            padding: 14px 24px;
+            background: var(--panel);
+            font-size: 11px;
+            font-weight: 800;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            color: var(--text-muted);
+            border-bottom: 1.5px solid var(--stroke);
+        }
+
+        td {
+            padding: 16px 24px;
+            border-bottom: 1px solid var(--stroke);
+            font-size: 13px;
+        }
+
+        tr:last-child td { border-bottom: none; }
+        tr:hover { background-color: var(--panel); }
+
+        /* Registry Badges */
+        .mission-id {
+            font-family: var(--font-mono);
+            font-weight: 700;
+            color: var(--text-muted);
+        }
+
+        .cat-badge {
+            font-size: 11px;
+            font-weight: 800;
+            text-transform: uppercase;
+            padding: 4px 10px;
+            background: var(--accent-soft);
+            color: var(--accent);
+            border-radius: 4px;
+            border: 1px solid rgba(16, 185, 129, 0.1);
+        }
+
+        .time-text { font-family: var(--font-mono); color: var(--text-muted); font-size: 12px; }
+
+        @media (max-width: 768px) {
+            .container { padding: 40px 24px; }
+            .bento-grid { grid-template-columns: 1fr; }
+            .table-wrapper { grid-column: span 1; }
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <div class="nav-bar">
+        <div class="brand">
+            <h2>Civic Ledger</h2>
+        </div>
+        <a href="/" class="back-btn">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" style="margin-right: 4px; vertical-align: middle;"><path d="M19 12H5m0 0l7-7m-7 7l7 7"/></svg>
+            RETURN_TO_DASHBOARD
+        </a>
+    </div>
+
+    <div class="bento-grid">
+        <div class="surface stat-card">
+            <div class="surface-head">Verified Action Count</div>
+            <div class="stat-body">
+                <span class="stat-value" id="countDisplay">--</span>
+                <span class="stat-label">System-Anchored Contributions</span>
+            </div>
+        </div>
+
+        <div class="surface">
+            <div class="surface-head">Sector Progress Level</div>
+            <div class="progress-body">
+                <div class="progress-rail">
+                    <div id="progressBar" class="progress-fill" style="width: 0%;"></div>
+                </div>
+                <div id="levelText">Synchronizing Telemetry...</div>
+            </div>
+        </div>
+
+        <div class="surface table-wrapper">
+            <div class="surface-head">Full Cryptographic Audit Trail</div>
+            <div id="ledgerBox">
+                <p style="padding: 48px; text-align: center; color: var(--text-muted); font-family: var(--font-mono); font-size: 13px;">
+                    [SYSTEM_WAITING] SYNCING WITH BLOCKCHAIN_NODE...
+                </p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+const userId = {{ user_id }};
+
+async function loadLedger(){
+    try {
+        const res = await fetch(`/api/user/${userId}/ledger`);
+        const data = await res.json();
+
+        // 1. Update Counter
+        document.getElementById("countDisplay").innerText = data.length.toString().padStart(2, '0');
+        
+        // 2. Logic-Driven Progress
+        const target = 20;
+        const progress = Math.min((data.length / target) * 100, 100);
+        document.getElementById("progressBar").style.width = progress + "%";
+        
+        const levelDisplay = data.length >= target 
+            ? "ELITE_SYSTEM_CONTRIBUTOR" 
+            : `REMAINING_ACTIONS: ${(target - data.length).toString().padStart(2, '0')}`;
+        document.getElementById("levelText").innerText = levelDisplay;
+
+        if(data.length === 0){
+            document.getElementById("ledgerBox").innerHTML = `
+                <div style="padding: 80px; text-align: center; color: var(--text-muted); font-family: var(--font-mono); font-size: 13px;">
+                    [ZERO_DATA_DETECTED] NO VERIFIED ACTIONS ON FILE.
+                </div>`;
+            return;
+        }
+
+        // 3. Render Tactical Table
+        let html = `<table><thead><tr><th>Ref_ID</th><th>Log_Classification</th><th>System_Timestamp</th></tr></thead><tbody>`;
+
+        data.forEach(e => {
+            const date = new Date(e.timestamp);
+            const formattedDate = date.toLocaleDateString('en-GB', { 
+                day: '2-digit', month: 'short', year: 'numeric'
+            }).toUpperCase() + " " + date.toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' });
+
+            html += `
+                <tr>
+                    <td class="mission-id">#ID_${e.mission_id}</td>
+                    <td><span class="cat-badge">${e.category}</span></td>
+                    <td class="time-text">${formattedDate}</td>
+                </tr>
+            `;
+        });
+
+        html += "</tbody></table>";
+        document.getElementById("ledgerBox").innerHTML = html;
+        
+    } catch (e) {
+        document.getElementById("ledgerBox").innerHTML = `
+            <div style="padding: 48px; text-align: center; color: var(--danger); font-family: var(--font-mono); font-size: 13px;">
+                [ERROR] CONNECTION_TO_LEDGER_FAILED.
+            </div>`;
+    }
+}
+
+loadLedger();
+</script>
+
+</body>
+</html>

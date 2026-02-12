@@ -1,0 +1,432 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <title>Officer Console | AVIN Delhi</title>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --canvas: #ffffff;
+            --panel: #fcfcfc;
+            --stroke: #e2e8f0;
+            --text-main: #0f172a;
+            --text-muted: #64748b;
+            --accent: #2563eb;
+            --accent-soft: #eff6ff;
+            --radius-ui: 6px;
+            --font-mono: 'JetBrains Mono', monospace;
+        }
+
+        body {
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            background-color: var(--canvas);
+            color: var(--text-main);
+            margin: 0;
+            -webkit-font-smoothing: antialiased;
+        }
+
+        /* Tactical Navigation */
+        nav {
+            height: 64px;
+            border-bottom: 1.5px solid var(--stroke);
+            display: flex;
+            align-items: center;
+            padding: 0 40px;
+            justify-content: space-between;
+            background: white;
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+        }
+
+        .brand-unit { display: flex; align-items: center; gap: 12px; }
+        .brand-unit b { font-size: 16px; text-transform: uppercase; letter-spacing: 0.15em; font-family: var(--font-mono); }
+        .nav-links a { text-decoration: none; color: var(--text-muted); font-size: 13px; font-weight: 700; margin-left: 24px; transition: 0.2s; }
+        .nav-links a:hover { color: var(--accent); }
+
+        .container {
+            max-width: 1300px;
+            margin: 0 auto;
+            padding: 48px 40px;
+        }
+
+        header { margin-bottom: 40px; }
+        header h1 { font-size: 24px; font-weight: 800; margin: 0; letter-spacing: -0.02em; }
+
+        /* Metric Tiles */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 1px;
+            background: var(--stroke);
+            border: 1.5px solid var(--stroke);
+            border-radius: var(--radius-ui);
+            margin-bottom: 40px;
+            overflow: hidden;
+        }
+
+        .stat-card { background: white; padding: 24px; }
+        .stat-card .label { font-size: 11px; font-weight: 800; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.05em; }
+        .stat-card .value { font-size: 32px; font-weight: 800; display: block; margin-top: 4px; font-family: var(--font-mono); }
+
+        /* Action Bar */
+        .action-bar {
+            display: flex;
+            gap: 12px;
+            margin-bottom: 40px;
+            background: var(--panel);
+            padding: 12px;
+            border-radius: var(--radius-ui);
+            border: 1.5px solid var(--stroke);
+        }
+
+        .action-bar input {
+            flex: 1;
+            padding: 12px 16px;
+            border: 1.5px solid var(--stroke);
+            border-radius: 4px;
+            font-family: inherit;
+            font-size: 14px;
+            outline: none;
+        }
+
+        .action-bar input:focus { border-color: var(--accent); background: white; }
+
+        .btn-update {
+            background: var(--text-main);
+            color: white;
+            border: none;
+            padding: 0 24px;
+            border-radius: 4px;
+            font-weight: 800;
+            font-size: 13px;
+            cursor: pointer;
+            transition: 0.2s;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .btn-update:hover { background: var(--accent); transform: translateY(-1px); }
+
+        /* Section Cards */
+        .section-card {
+            border: 1.5px solid var(--stroke);
+            border-radius: var(--radius-ui);
+            margin-bottom: 32px;
+            overflow: hidden;
+        }
+
+        .section-card h3 {
+            background: var(--panel);
+            margin: 0;
+            padding: 12px 20px;
+            font-size: 11px;
+            font-weight: 800;
+            text-transform: uppercase;
+            border-bottom: 1.5px solid var(--stroke);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        #adminLeaderboard { padding: 16px; display: flex; flex-wrap: wrap; gap: 8px; }
+
+        .hotspot-tag {
+            background: white;
+            border: 1.5px solid var(--stroke);
+            padding: 6px 14px;
+            border-radius: 4px;
+            font-size: 13px;
+            font-weight: 700;
+            display: flex;
+            gap: 10px;
+            align-items: center;
+        }
+
+        .nearby-pill { font-family: var(--font-mono); color: var(--accent); font-size: 12px; }
+
+        /* Table Design */
+        .table-card {
+            border: 1.5px solid var(--stroke);
+            border-radius: var(--radius-ui);
+            overflow: hidden;
+        }
+
+        table { width: 100%; border-collapse: collapse; }
+        thead th {
+            background: var(--panel);
+            text-align: left;
+            padding: 12px 20px;
+            font-size: 11px;
+            font-weight: 800;
+            color: var(--text-muted);
+            border-bottom: 1.5px solid var(--stroke);
+            text-transform: uppercase;
+        }
+
+        tbody td {
+            padding: 16px 20px;
+            border-bottom: 1px solid var(--stroke);
+            font-size: 13px;
+        }
+
+        tbody tr:hover { background-color: var(--panel); }
+
+        /* Severity Chips */
+        .sev-tag {
+            font-family: var(--font-mono);
+            font-size: 10px;
+            font-weight: 700;
+            padding: 2px 6px;
+            border-radius: 3px;
+            display: inline-block;
+            margin-top: 4px;
+        }
+        .sev-HIGH { background: #fee2e2; color: #991b1b; }
+        .sev-MEDIUM { background: #fef3c7; color: #92400e; }
+        .sev-LOW { background: #dcfce7; color: #166534; }
+
+        /* Form Elements in Table */
+        .status-select {
+            padding: 8px 30px 8px 10px;
+            appearance: none;
+            border: 1.5px solid var(--stroke);
+            border-radius: 4px;
+            font-family: inherit;
+            font-size: 12px;
+            font-weight: 700;
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='14' height='14' viewBox='0 0 24 24' fill='none' stroke='%2364748b' stroke-width='2.5'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E");
+            background-repeat: no-repeat;
+            background-position: right 8px center;
+            cursor: pointer;
+        }
+
+        .eta-input {
+            width: 50px;
+            padding: 8px;
+            border: 1.5px solid var(--stroke);
+            border-radius: 4px;
+            text-align: center;
+            font-family: var(--font-mono);
+            font-weight: 700;
+        }
+
+        .desc-text { color: var(--text-muted); line-height: 1.4; max-width: 300px; }
+        #officerMap { filter: grayscale(0.2) contrast(1.1); }
+    </style>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+</head>
+
+<body>
+
+    <nav>
+        <div class="brand-unit">
+            <div style="width:14px; height:14px; background:var(--accent); border-radius:2px;"></div>
+            <b>AVIN</b>
+        </div>
+        <div class="nav-links">
+            <a href="/">REGIONAL_FEED</a>
+            <a href="/logout" style="color:#ef4444">DISCONNECT</a>
+        </div>
+    </nav>
+
+    <div class="container">
+        <header>
+            <h1>Officer Control Console</h1>
+            <p style="color: var(--text-muted); margin: 4px 0 0 0; font-size: 14px;">AVIN Environmental Resource Management Hub</p>
+        </header>
+
+        <select style="display: none;" id="locationFilter" onchange="loadOfficerMapRegions()">
+            {% for loc in officer_locations %}
+            <option value="{{ loc }}">{{ loc }}</option>
+            {% endfor %}
+        </select>
+
+        <div class="stats-grid">
+            <div class="stat-card">
+                <span class="label">Priority_High</span>
+                <span class="value" id="count-high">--</span>
+            </div>
+            <div class="stat-card">
+                <span class="label">Processing</span>
+                <span class="value" id="count-pending">--</span>
+            </div>
+            <div class="stat-card">
+                <span class="label">Resolved_24H</span>
+                <span class="value" id="count-resolved">--</span>
+            </div>
+        </div>
+
+        <div class="action-bar">
+            <input id="locationInput" placeholder="Locality sync parameter...">
+            <button class="btn-update" onclick="loadIssues()">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="M21 12a9 9 0 0 0-9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/><path d="M3 12a9 9 0 0 0 9 9 9.75 9.75 0 0 0 6.74-2.74L21 16"/><path d="M16 16h5v5"/></svg>
+                Sync_Data
+            </button>
+        </div>
+
+        <div class="section-card">
+            <h3>
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z"/><circle cx="12" cy="10" r="3"/></svg>
+                Sector Density Mapping
+            </h3>
+            <div id="officerMap" style="height:420px;"></div>
+        </div>
+
+        <div class="section-card">
+            <h3>
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M6 9H4.5a2.5 2.5 0 0 1 0-5H6"/><path d="M18 9h1.5a2.5 2.5 0 0 0 0-5H18"/><path d="M4 22h16"/><path d="M10 14.66V17c0 .55-.47.98-.97 1.21C7.85 18.75 7 20.24 7 22"/><path d="M14 14.66V17c0 .55.47.98.97 1.21C16.15 18.75 17 20.24 17 22"/><path d="M18 2H6v7a6 6 0 0 0 12 0V2Z"/></svg>
+                Top Verified Contributors
+            </h3>
+            <div id="adminLeaderboard"></div>
+        </div>
+
+        <div class="table-card">
+            <div id="issuesBox">
+                <div style="padding: 80px; text-align: center; color: var(--text-muted); font-size: 13px; font-weight: 700; font-family: var(--font-mono);">
+                    [SYSTEM_WAITING] SYNCHRONIZE SECTOR FOR TELEMETRY
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+
+    <script>
+        const officerLocality = document.getElementById("locationFilter").value;
+
+        function categoryColor(cat) {
+            const m = { "waste": "#22c55e", "water": "#0ea5e9", "air": "#6366f1", "roads": "#f59e0b", "transport": "#ef4444" };
+            return m[(cat || "").toLowerCase()] || "#64748b";
+        }
+
+        async function loadAdminLeaderboard() {
+            const res = await fetch("/api/admin/leaderboard");
+            const data = await res.json();
+            const box = document.getElementById("adminLeaderboard");
+            box.innerHTML = "";
+            data.slice(0, 10).forEach((u, i) => {
+                const d = document.createElement("div");
+                d.className = "hotspot-tag";
+                d.innerHTML = `<span>#${i + 1} ${u.name}</span><span class="nearby-pill">${u.credits} CP</span>`;
+                box.appendChild(d);
+            });
+        }
+
+        function truncateText(text, limit = 35) {
+            if (!text) return "N/A";
+            return text.length > limit ? text.slice(0, limit) + "..." : text;
+        }
+
+        let officerMap;
+        let officerLayers = [];
+
+        async function initOfficerMap(centerLat, centerLng) {
+            officerMap = L.map("officerMap", { zoomControl: false }).setView([centerLat, centerLng], 13);
+            L.tileLayer("https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png").addTo(officerMap);
+            loadOfficerMapRegions();
+        }
+
+        async function loadOfficerMapRegions() {
+            const selectedLocation = document.getElementById("locationFilter").value;
+            const res = await fetch("/api/map/regions?location=" + encodeURIComponent(selectedLocation));
+            const regions = await res.json();
+            officerLayers.forEach(l => officerMap.removeLayer(l));
+            for (const r of regions) {
+                const p = await geocodeRegion(r.location);
+                if (!p) continue;
+                const base = L.circleMarker([p.lat, p.lng], {
+                    radius: Math.min(25, 8 + r.count * 1.5),
+                    color: categoryColor((r.dominant_category || "").toLowerCase()),
+                    fillOpacity: 0.2, weight: 2
+                }).addTo(officerMap);
+                officerLayers.push(base);
+            }
+        }
+
+        const officerGeocodeCache = {};
+        async function geocodeRegion(name) {
+            if (!name) return null;
+            if (officerGeocodeCache[name]) return officerGeocodeCache[name];
+            const url = "https://nominatim.openstreetmap.org/search?format=json&q=" + encodeURIComponent(name + ", Delhi, India");
+            try {
+                const res = await fetch(url, { headers: { "User-Agent": "avin-console" } });
+                const data = await res.json();
+                if (!data || !data.length) return null;
+                const p = { lat: parseFloat(data[0].lat), lng: parseFloat(data[0].lon) };
+                officerGeocodeCache[name] = p; return p;
+            } catch (e) { return null; }
+        }
+
+        async function loadIssues() {
+            const loc = document.getElementById("locationInput").value.trim();
+            if (!loc) return;
+            const box = document.getElementById("issuesBox");
+            box.innerHTML = `<div style="padding: 60px; text-align: center; font-family:var(--font-mono); font-size:13px;">[SYNC_IN_PROGRESS...]</div>`;
+            try {
+                const res = await fetch("/api/officer/issues?location=" + encodeURIComponent(loc));
+                const data = await res.json();
+                if (!data || data.length === 0) {
+                    box.innerHTML = `<div style="padding: 60px; text-align: center;">NO_RECORDS_FOUND_FOR_${loc.toUpperCase()}</div>`;
+                    return;
+                }
+                document.getElementById('count-high').innerText = data.filter(i => i.severity === 'HIGH').length;
+                document.getElementById('count-pending').innerText = data.filter(i => i.status !== 'RESOLVED').length;
+                document.getElementById('count-resolved').innerText = data.filter(i => i.status === 'RESOLVED').length;
+                
+                let html = `<table><thead><tr><th>REF_ID</th><th>LOG_CLASS</th><th>FEEDBACK</th><th>STATUS</th><th>ETA</th><th>CMD</th></tr></thead><tbody>`;
+                data.forEach(i => {
+                    html += `
+                <tr>
+                    <td style="font-family: var(--font-mono); font-weight: 700; color: var(--text-muted);">#${i.id}</td>
+                    <td>
+                        <div style="font-weight: 800;">${i.category}</div>
+                        <span class="sev-tag sev-${i.severity}">${i.severity}</span>
+                    </td>
+                    <td><div class="desc-text" title="${i.text}">${truncateText(i.text)}</div></td>
+                    <td>
+                        <select class="status-select" id="status_${i.id}">
+                            ${["SUBMITTED", "INSPECTED", "IN_PROGRESS", "RESOLVED"].map(s => `<option value="${s}" ${i.status === s ? 'selected' : ''}>${s}</option>`).join('')}
+                        </select>
+                    </td>
+                    <td><input type="number" class="eta-input" id="days_${i.id}" value="${i.estimated_days || ''}"></td>
+                    <td><button class="btn-update" style="padding:8px 16px;" onclick="saveIssue(${i.id})">SAVE</button></td>
+                </tr>`;
+                });
+                html += "</tbody></table>";
+                box.innerHTML = html;
+            } catch (e) { box.innerHTML = `<div style="padding: 60px; text-align: center; color: var(--danger);">[SYNC_ERROR_COMMUNICATION_FAILURE]</div>`; }
+        }
+
+        async function saveIssue(id) {
+            const status = document.getElementById("status_" + id).value;
+            const days = document.getElementById("days_" + id).value;
+            await fetch(`/api/officer/issue/${id}/update`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ status, estimated_days: days }) });
+            alert("LOG_ENTRY_SYNCHRONIZED: #" + id);
+        }
+
+        window.onload = () => {
+            if (navigator.geolocation) {
+                navigator.geolocation.getCurrentPosition(async pos => {
+                    try {
+                        const res = await fetch("/api/reverse-geocode", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ lat: pos.coords.latitude, lng: pos.coords.longitude }) });
+                        const data = await res.json();
+                        if (data.location) { document.getElementById("locationInput").value = data.location; loadIssues(); }
+                    } catch (e) { }
+                });
+            }
+        };
+
+        async function bootOfficerDashboard() {
+            const officerLocality = document.getElementById("locationFilter").value;
+            const p = await geocodeRegion(officerLocality);
+            if (p) { await initOfficerMap(p.lat, p.lng); } else { await initOfficerMap(28.6139, 77.2090); }
+            loadAdminLeaderboard();
+        }
+        bootOfficerDashboard();
+    </script>
+</body>
+</html>

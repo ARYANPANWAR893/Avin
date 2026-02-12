@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <title>Impact & Rewards | AVIN</title>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --canvas: #ffffff;
+            --panel: #fcfcfc;
+            --stroke: #e2e8f0;
+            --text-main: #0f172a;
+            --text-muted: #64748b;
+            --accent: #10b981; /* Green for Sustainability */
+            --radius-ui: 6px;
+            --font-mono: 'JetBrains Mono', monospace;
+        }
+
+        body {
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            background-color: var(--canvas);
+            color: var(--text-main);
+            margin: 0;
+            -webkit-font-smoothing: antialiased;
+        }
+
+        .container { max-width: 900px; margin: 0 auto; padding: 60px 40px; }
+
+        /* Tactical Header */
+        header { border-bottom: 1.5px solid var(--stroke); padding-bottom: 24px; margin-bottom: 40px; }
+        header h2 { font-size: 28px; font-weight: 800; margin: 0; letter-spacing: -1px; }
+
+        /* Dashboard Surfaces */
+        .surface { border: 1.5px solid var(--stroke); border-radius: var(--radius-ui); overflow: hidden; margin-bottom: 32px; }
+        .surface-head { background: var(--panel); padding: 12px 20px; font-size: 11px; font-weight: 800; text-transform: uppercase; border-bottom: 1.5px solid var(--stroke); color: var(--text-muted); letter-spacing: 0.05em; }
+        .surface-body { padding: 24px; }
+
+        /* Stats Grid */
+        .impact-summary { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 1px; background: var(--stroke); border-radius: 4px; overflow: hidden; border: 1px solid var(--stroke); }
+        .stat-box { background: white; padding: 20px; }
+        .stat-label { font-size: 10px; font-weight: 800; text-transform: uppercase; color: var(--text-muted); display: block; margin-bottom: 8px; }
+        .stat-value { font-family: var(--font-mono); font-weight: 700; font-size: 20px; color: var(--accent); }
+
+        /* Rewards Table */
+        table { width: 100%; border-collapse: collapse; margin-top: -12px; }
+        td { padding: 16px 0; border-bottom: 1px solid var(--stroke); vertical-align: middle; }
+        tr:last-child td { border-bottom: none; }
+        .reward-name { font-weight: 800; font-size: 14px; display: block; color: var(--text-main); }
+        .reward-desc { font-size: 12px; color: var(--text-muted); margin-top: 4px; display: block; }
+        
+        .btn-redeem { 
+            background: var(--text-main); color: white; border: none; padding: 8px 16px; border-radius: 4px; font-weight: 700; font-size: 11px; cursor: pointer; text-transform: uppercase;
+        }
+        .btn-redeem:hover { background: var(--accent); }
+
+        /* Area Chips */
+        .area-list { display: flex; flex-wrap: wrap; gap: 10px; }
+        .area-chip { background: var(--panel); border: 1px solid var(--stroke); padding: 10px 16px; border-radius: 4px; font-size: 13px; font-weight: 600; display: flex; gap: 12px; }
+        .area-val { color: var(--accent); font-family: var(--font-mono); }
+
+        .loading { padding: 40px; text-align: center; color: var(--text-muted); font-family: var(--font-mono); font-size: 12px; }
+    </style>
+</head>
+<body>
+
+{% include "_navbar.html" %}
+
+<div class="container">
+    <header>
+        <h2>Sustainability Impact</h2>
+        <p style="margin: 4px 0 0 0; font-size: 13px; color: var(--text-muted);">Verified civic environmental contributions</p>
+    </header>
+
+    <div class="surface">
+        <div class="surface-head">System-Wide Action Metrics</div>
+        <div class="surface-body">
+            <div id="impactBox" class="impact-summary">
+                <div class="loading">Initializing impact data...</div>
+            </div>
+        </div>
+    </div>
+
+    <div class="surface">
+        <div class="surface-head">Geospatial Influence</div>
+        <div class="surface-body" id="areaBox">
+            <div class="loading">Syncing sector telemetry...</div>
+        </div>
+    </div>
+
+    <div class="surface">
+        <div class="surface-head">Available Asset Incentives</div>
+        <div class="surface-body">
+            <div id="rewardBox">
+                <div class="loading">Scanning reward registry...</div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+async function loadImpact(){
+    try {
+        const metrics = await fetch("/api/me/metrics").then(r => r.json());
+        const impact = await fetch("/api/me/impact").then(r => r.json());
+        const rewards = await fetch("/api/me/rewards").then(r => r.json());
+
+        // Impact Box
+        let mhtml = `
+            <div class="stat-box">
+                <span class="stat-label">Total Verified</span>
+                <span class="stat-value">${metrics.total_actions}</span>
+            </div>
+        `;
+        for(const k in metrics.by_category){
+            mhtml += `
+                <div class="stat-box">
+                    <span class="stat-label">${k}</span>
+                    <span class="stat-value">${metrics.by_category[k]}</span>
+                </div>
+            `;
+        }
+        document.getElementById("impactBox").innerHTML = mhtml;
+
+        // Area Box
+        let ahtml = '<div class="area-list">';
+        const impactEntries = Object.entries(impact);
+        if (impactEntries.length > 0) {
+            impactEntries.forEach(([loc, count]) => {
+                ahtml += `
+                    <div class="area-chip">
+                        <span>${loc}</span>
+                        <span class="area-val">${count} LOGS</span>
+                    </div>
+                `;
+            });
+            ahtml += '</div>';
+        } else {
+            ahtml = '<div style="color:var(--text-muted); font-size:13px;">No regional logs detected in current session.</div>';
+        }
+        document.getElementById("areaBox").innerHTML = ahtml;
+
+        // Reward Box
+        if (rewards.length > 0) {
+            let rhtml = '<table>';
+            rewards.forEach(r => {
+                rhtml += `
+                    <tr>
+                        <td>
+                            <span class="reward-name">${r.name}</span>
+                            <span class="reward-desc">${r.description}</span>
+                        </td>
+                        <td style="text-align:right">
+                            <button class="btn-redeem">Unlock Asset</button>
+                        </td>
+                    </tr>
+                `;
+            });
+            rhtml += '</table>';
+            document.getElementById("rewardBox").innerHTML = rhtml;
+        } else {
+            document.getElementById("rewardBox").innerHTML = '<div style="color:var(--text-muted); font-size:13px;">No incentives currently unlocked for this trust level.</div>';
+        }
+
+    } catch (e) {
+        console.error("Critical System Error: Dashboard sync failed.");
+    }
+}
+
+loadImpact();
+</script>
+
+</body>
+</html>

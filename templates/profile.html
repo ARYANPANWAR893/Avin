@@ -1,0 +1,205 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <title>Registry Profile | AVIN</title>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --canvas: #ffffff;
+            --panel: #fcfcfc;
+            --stroke: #e2e8f0;
+            --text-main: #0f172a;
+            --text-muted: #64748b;
+            --accent: #2563eb;
+            --radius-ui: 6px;
+            --font-mono: 'JetBrains Mono', monospace;
+        }
+
+        body {
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            background-color: var(--canvas);
+            color: var(--text-main);
+            margin: 0;
+            -webkit-font-smoothing: antialiased;
+        }
+
+        .container { max-width: 900px; margin: 0 auto; padding: 60px 40px; }
+
+        /* Tactical Header */
+        header { border-bottom: 1.5px solid var(--stroke); padding-bottom: 24px; margin-bottom: 40px; }
+        header h2 { font-size: 28px; font-weight: 800; margin: 0; letter-spacing: -1px; }
+
+        /* Data Surface */
+        .surface { border: 1.5px solid var(--stroke); border-radius: var(--radius-ui); overflow: hidden; margin-bottom: 32px; }
+        .surface-head { background: var(--panel); padding: 12px 20px; font-size: 11px; font-weight: 800; text-transform: uppercase; border-bottom: 1.5px solid var(--stroke); color: var(--text-muted); letter-spacing: 0.05em; }
+        .surface-body { padding: 24px; }
+
+        /* Profile Grid */
+        .profile-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; }
+        .data-field { margin-bottom: 16px; }
+        .data-label { font-size: 11px; font-weight: 800; text-transform: uppercase; color: var(--text-muted); display: block; margin-bottom: 6px; }
+        .data-value { font-family: var(--font-mono); font-weight: 700; font-size: 14px; }
+        
+        /* Form Elements */
+        input[type="text"], input[type="email"] {
+            width: 100%; padding: 10px 14px; border: 1.5px solid var(--stroke); border-radius: 4px; font-family: inherit; font-size: 14px; box-sizing: border-box; background: var(--panel);
+        }
+        input:focus { outline: none; border-color: var(--accent); background: white; }
+
+        /* Registry Rank Layout */
+        .rank-item { display: flex; justify-content: space-between; padding: 12px 0; border-bottom: 1px solid var(--stroke); }
+        .rank-item:last-child { border-bottom: none; }
+        .rank-val { font-family: var(--font-mono); font-weight: 800; color: var(--accent); }
+
+        /* Toggle Component */
+        .switch-row { display: flex; align-items: center; justify-content: space-between; background: var(--panel); padding: 16px; border-radius: 4px; border: 1px solid var(--stroke); }
+        .switch-row label { font-size: 13px; font-weight: 700; cursor: pointer; }
+
+        .btn-update {
+            background: var(--text-main); color: white; border: none; padding: 12px 24px; border-radius: 4px; font-weight: 800; font-size: 13px; cursor: pointer; transition: 0.2s; margin-top: 12px; width: 100%;
+        }
+        .btn-update:hover { background: var(--accent); }
+        .btn-update:disabled { background: var(--stroke); cursor: not-allowed; }
+
+        #msg { margin-top: 12px; font-size: 12px; font-weight: 700; text-align: center; display: none; }
+    </style>
+</head>
+<body>
+
+{% include "_navbar.html" %}
+
+<div class="container">
+    <header>
+        <h2>Registry Profile</h2>
+        <p style="margin: 4px 0 0 0; font-size: 13px; color: var(--text-muted);">AVIN Identity & Ranking Records</p>
+    </header>
+
+    <div class="profile-grid">
+        <div class="surface">
+            <div class="surface-head">Account Identity</div>
+            <div class="surface-body" id="profileBox">
+                <div class="data-field">
+                    <span class="data-label">Display Name</span>
+                    <input type="text" id="userName" placeholder="Loading...">
+                </div>
+                <div class="data-field">
+                    <span class="data-label">System Email</span>
+                    <input type="email" id="userEmail" readonly style="opacity: 0.6; cursor: not-allowed;">
+                </div>
+                <div class="data-field">
+                    <span class="data-label">Verified Credits</span>
+                    <div class="data-value" id="userCredits">--</div>
+                </div>
+                <button class="btn-update" id="saveBtn" onclick="updateProfile()">Update Identity</button>
+                <div id="msg"></div>
+            </div>
+        </div>
+
+        <div class="surface">
+            <div class="surface-head">Contribution Ranking</div>
+            <div class="surface-body" id="rankBox">
+                <div style="padding: 20px; text-align: center; color: var(--text-muted);">Syncing telemetry...</div>
+            </div>
+        </div>
+    </div>
+
+    <div class="surface">
+        <div class="surface-head">Public Contribution Protocol</div>
+        <div class="surface-body">
+            <div class="switch-row">
+                <label for="publicToggle">Enable contribution visibility on global leaderboards</label>
+                <input type="checkbox" id="publicToggle" style="transform: scale(1.3);">
+            </div>
+            <p style="font-size: 12px; color: var(--text-muted); margin-top: 12px;">When disabled, your metrics are processed privately and will not appear in the civic registry.</p>
+        </div>
+    </div>
+</div>
+
+<script>
+async function loadProfile(){
+    try {
+        const me = await fetch("/api/me").then(r => r.json());
+        const rank = await fetch("/api/me/rank").then(r => r.json());
+
+        // Populate Form
+        document.getElementById("userName").value = me.name;
+        document.getElementById("userEmail").value = me.email;
+        document.getElementById("userCredits").innerText = `${me.credits} CP`;
+        document.getElementById("publicToggle").checked = me.public_profile;
+
+        // Populate Ranks
+        let rhtml = `
+            <div class="rank-item">
+                <span class="data-label">Global Delhi Rank</span>
+                <span class="rank-val">#${rank.rank_in_delhi}</span>
+            </div>
+            <div class="rank-item">
+                <span class="data-label">Delhi Sector Pool</span>
+                <span class="data-value">${rank.total_users_in_delhi} Officers</span>
+            </div>
+        `;
+
+        if(rank.area){
+            rhtml += `
+                <div class="rank-item" style="margin-top: 12px; border-top: 1.5px solid var(--stroke); padding-top: 16px;">
+                    <span class="data-label">${rank.area.toUpperCase()} RANK</span>
+                    <span class="rank-val">#${rank.rank_in_area}</span>
+                </div>
+                <div class="rank-item">
+                    <span class="data-label">Sector Population</span>
+                    <span class="data-value">${rank.total_users_in_area}</span>
+                </div>
+            `;
+        }
+        document.getElementById("rankBox").innerHTML = rhtml;
+    } catch (e) { console.error("Registry sync failed."); }
+}
+
+async function updateProfile() {
+    const saveBtn = document.getElementById("saveBtn");
+    const msg = document.getElementById("msg");
+    const newName = document.getElementById("userName").value;
+
+    saveBtn.disabled = true;
+    saveBtn.innerText = "Processing...";
+
+    try {
+        // SAMPLE POST REQUEST: Updating the user's name
+        const res = await fetch("/api/me/update", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ name: newName })
+        });
+
+        if (res.ok) {
+            msg.style.color = "var(--accent)";
+            msg.innerText = "SUCCESS: Registry updated.";
+        } else {
+            msg.style.color = "var(--danger)";
+            msg.innerText = "ERROR: Update rejected.";
+        }
+    } catch (e) {
+        msg.innerText = "SYSTEM ERROR: Offline.";
+    } finally {
+        msg.style.display = "block";
+        saveBtn.disabled = false;
+        saveBtn.innerText = "Update Identity";
+        setTimeout(() => { msg.style.display = "none"; }, 3000);
+    }
+}
+
+publicToggle.onchange = async ()=>{
+    await fetch("/api/me/public", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ public: publicToggle.checked })
+    });
+};
+
+loadProfile();
+</script>
+
+</body>
+</html>

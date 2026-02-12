@@ -1,0 +1,255 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <title>Login | AVIN Delhi</title>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --canvas: #0f172a;
+            --panel: #1e293b;
+            --stroke: rgba(255, 255, 255, 0.1);
+            --text-main: #f8fafc;
+            --text-muted: #94a3b8;
+            --accent: #10b981;
+            --primary: #6366f1;
+            --font-mono: 'JetBrains Mono', monospace;
+        }
+
+        body, html {
+            height: 100%;
+            margin: 0;
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            background-color: var(--canvas);
+            color: var(--text-main);
+            overflow: hidden;
+        }
+
+        /* Split Screen Container */
+        .main-wrapper {
+            display: flex;
+            height: 100vh;
+            width: 100vw;
+        }
+
+        /* LEFT SIDE: Visual & Identity (50%) */
+        .visual-side {
+            width: 50%;
+            padding: 80px;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            position: relative;
+            background: radial-gradient(circle at top left, #1e1b4b, #0f172a);
+            border-right: 1px solid var(--stroke);
+            box-sizing: border-box;
+        }
+
+        .visual-side::after {
+            content: "";
+            position: absolute;
+            inset: 0;
+            background-image: radial-gradient(var(--stroke) 1px, transparent 1px);
+            background-size: 40px 40px;
+            opacity: 0.3;
+        }
+
+        /* RIGHT SIDE: Login Form (50%) */
+        .form-side {
+            width: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: var(--canvas);
+        }
+
+        /* Brand Elements */
+        .system-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+            font-family: var(--font-mono);
+            font-size: 11px;
+            font-weight: 700;
+            color: var(--accent);
+            text-transform: uppercase;
+            letter-spacing: 0.15em;
+            position: relative;
+            z-index: 2;
+        }
+
+        h1 {
+            font-size: 42px;
+            font-weight: 800;
+            margin: 24px 0;
+            letter-spacing: -1.5px;
+            line-height: 1.1;
+            position: relative;
+            z-index: 2;
+        }
+
+        /* Viewport Box */
+        .visual-viewport {
+            position: relative;
+            z-index: 2;
+            width: 100%;
+            height: 300px;
+            border: 1px solid var(--stroke);
+            border-radius: 8px;
+            background: rgba(255, 255, 255, 0.02);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-family: var(--font-mono);
+            font-size: 11px;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            overflow: hidden;
+        }
+
+        /* Your Original Login Card Refined for Split Screen */
+        .login-card {
+            width: 100%;
+            max-width: 400px;
+            padding: 40px;
+        }
+
+        .login-header {
+            text-align: left;
+            margin-bottom: 40px;
+        }
+
+        .login-header h2 {
+            margin: 0;
+            font-size: 32px;
+            font-weight: 800;
+            letter-spacing: -1px;
+        }
+
+        .subtitle {
+            color: var(--text-muted);
+            font-size: 15px;
+            margin-top: 10px;
+        }
+
+        .input-group { margin-bottom: 24px; }
+
+        label {
+            display: block;
+            font-size: 12px;
+            font-weight: 700;
+            margin-bottom: 10px;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        input {
+            width: 100%;
+            padding: 14px 18px;
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid var(--stroke);
+            border-radius: 12px;
+            font-size: 15px;
+            color: var(--text-main);
+            box-sizing: border-box;
+            transition: all 0.3s;
+            outline: none;
+        }
+
+        input:focus {
+            background: rgba(255, 255, 255, 0.08);
+            border-color: var(--primary);
+        }
+
+        button {
+            background: var(--primary);
+            color: white;
+            padding: 16px;
+            border: none;
+            border-radius: 12px;
+            font-size: 16px;
+            font-weight: 700;
+            cursor: pointer;
+            width: 100%;
+            transition: 0.2s;
+        }
+
+        button:hover {
+            transform: translateY(-2px);
+            filter: brightness(1.1);
+        }
+
+        .footer-link {
+            text-align: left;
+            margin-top: 32px;
+            font-size: 14px;
+            color: var(--text-muted);
+        }
+
+        .footer-link a { color: var(--primary); text-decoration: none; font-weight: 700; }
+
+        @media (max-width: 1100px) {
+            .visual-side { display: none; }
+            .form-side { width: 100%; }
+        }
+    </style>
+</head>
+<body>
+
+<div class="main-wrapper">
+    
+    <div class="visual-side">
+        <div>
+            <div class="system-badge">
+                <div style="width:10px; height:10px; background:var(--accent); border-radius:1px;"></div>
+                AVIN_IDENTITY // AUTH_GATE_V1.0
+            </div>
+            <h1>Initialize<br>System Session</h1>
+            <p style="color: var(--text-muted); line-height: 1.6; max-width: 400px; position: relative; z-index: 2;">
+                Access the Delhi Sustainability Command Console to manage regional environmental data and civic action registries.
+            </p>
+        </div>
+
+        <div class="visual-viewport">
+            <img src="https://plus.unsplash.com/premium_photo-1676618539992-21c7d3b6df0f?q=80&w=1932&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D" alt="">
+        </div>
+        <br><br>
+
+        <div style="font-family: var(--font-mono); font-size: 10px; color: var(--text-muted); text-transform: uppercase; position: relative; z-index: 2;">
+            Cryptographically Secured // Delhi Civic Intelligence
+        </div>
+    </div>
+
+    <div class="form-side">
+        <div class="login-card">
+            <div class="login-header">
+                <h2>Welcome back</h2>
+                <p class="subtitle">Sign in to your sustainability portal</p>
+            </div>
+
+            <form method="post">
+                <div class="input-group">
+                    <label>Email Address</label>
+                    <input type="email" name="email" placeholder="name@email.com" required>
+                </div>
+
+                <div class="input-group">
+                    <label>Password</label>
+                    <input type="password" name="password" placeholder="••••••••" required>
+                </div>
+
+                <button type="submit">Sign in</button>
+            </form>
+
+            <div class="footer-link">
+                New here? <a href="/signup">Create an account</a>
+            </div>
+        </div>
+    </div>
+
+</div>
+
+</body>
+</html>
