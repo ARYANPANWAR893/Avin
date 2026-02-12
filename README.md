@@ -372,7 +372,7 @@ http://localhost:5000
 
 Built for:
 
-**Avinya HNSUT Hackathon 2026**
+**Avinya NSUT Hackathon 2026**
 
 ---
 
